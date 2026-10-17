@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 #include <algorithm>
+#include <map>
+#include <cctype>
 using namespace std;
 
 /**
@@ -83,7 +85,14 @@ void printBoard(const vector<int> &b) {
     for (int i = 1; i <= 16; i++) cout << b[i] << " ";
     cout << "\n";
 }
-
+int findFarmer(const vector<Delivery> &log, string name){
+    for(int i=0;i<log.size();i++){
+        if(log[i].farmer==name){
+            return i;
+        }
+    }
+    return -1;
+}
 
 int main() {
 
@@ -119,9 +128,33 @@ int main() {
     //  Q1  ·  THE WEIGHING SESSION          (see README)
     //  Uses: morningWeights
     // =================================================================
-
+    int val=0,pos=0,run=0,main=run;
+    double ttl=0,hev=morningWeights[0];
+    for(int i=0; i<12;i++){
+        ttl+=morningWeights[i];
+        if(morningWeights[i]>0 and morningWeights[i]<80){
+            val+=1;
+            run+=1;
+        }
+        else{
+            if(run>main){
+                main=run;
+            }
+            run=0;
+        }
+        if(morningWeights[i]>hev){
+            hev=morningWeights[i];
+            pos=i;
+        }
+    }
+    if(run>main){
+        main=run;
+    }
     cout << "=== Q1 ===\n";
-
+    cout<<"total: "<<ttl<<"\n";
+    cout<<"valid: "<<val<<" outof 12"<<"\n";
+    cout<<"Heaviest: "<<morningWeights[pos]<<" at position "<<pos<<"\n";
+    cout<<"Longest valid run: "<<main<<"\n";
 
 
 
@@ -133,8 +166,27 @@ int main() {
     //  Q2  ·  GRADE SUMMARY                 (see README)
     //  Uses: logbook
     // =================================================================
+    int a=0,b=0,c=0;
+    double ak=0,bk=0,ck=0;
+    for(Delivery y:logbook){
+        if(y.grade=='A'){
+            a++;
+            ak+=y.kg;
+        }
+        if(y.grade=='B'){
+            b++;
+            bk+=y.kg;
+        }
+        if(y.grade=='C'){
+            c++;
+            ck+=y.kg;
+        }
+    }
 
     cout << "=== Q2 ===\n";
+    cout<<"Grade A:"<< a <<" deliveries, "<<ak<<" kg total, "<<ak/a<<" kg average, \n";
+    cout<<"Grade B:" <<b <<" deliveries, "<<bk<<" kg total, "<<bk/b<<" kg average, \n";
+    cout<<"Grade C:"<< c <<" deliveries, "<<ck <<" kg total, "<<ck/c<<" kg average, \n";
 
 
 
@@ -149,10 +201,44 @@ int main() {
     // =================================================================
 
     cout << "=== Q3 ===\n";
-
-
-
-
+    int q=findFarmer(logbook, "Isanda");
+    int r=findFarmer(logbook, "Mukamana");
+    cout<<"findFarmer(Isanda) ="<<q<<"\n";
+    cout<<"findFarmer(Mukamana) ="<<r<<"\n";
+    map<string,double> dev;
+    map<string,double> freq;
+    for(Delivery f:logbook){
+        if(dev.find(f.farmer)==dev.end()){
+            dev[f.farmer]=f.kg;
+        }
+        else{
+            dev[f.farmer]+=f.kg;
+        }
+        if(freq.find(f.farmer)==dev.end()){
+            freq[f.farmer]=1;
+        }
+        else{
+            freq[f.farmer]+=1;
+        }
+    }
+    int heav=0;
+    string nam="";
+    for(auto [farme,kgs]:freq){
+        if(kgs>heav){
+            heav=kgs;
+            nam=farme;
+        }
+    }
+    int mst=0;
+    string na="";
+    for(auto [farm,cnt]:dev){
+        if(cnt>mst){
+            mst=cnt;
+            na=farm;
+        }
+    }
+    cout<<"Most deliveries:"<<nam<<"("<<heav<<")\n";
+    cout<<"Most kg:"<<na<<"("<<mst<<")\n";
 
     cout << "\n";
 
@@ -163,7 +249,25 @@ int main() {
     // =================================================================
 
     cout << "=== Q4 ===\n";
-
+    double pay=0;
+    double rt=450.0;
+    for(Delivery n:logbook){
+        double fee;
+        if(n.grade=='A'){
+            fee=n.kg*rt;
+            fee+=fee*0.1;
+        }
+        else if(n.grade=='B'){
+            fee=n.kg*rt;
+        }
+        else if(n.grade=='C'){
+            fee=n.kg*rt;
+            fee-=fee*0.2;
+        }
+        if(pay>100000) fee= fee/2;
+        pay+=fee;
+        cout<<n.farmer <<" "<<n.kg<< " kg grade " <<n.grade<< "-> "<<fee<<"\n";
+    }
 
 
 
@@ -177,7 +281,52 @@ int main() {
     // =================================================================
 
     cout << "=== Q5 ===\n";
-
+    int acc=0, rej=0;
+    double kil;
+    for(RawRecord y:rawRecords){
+        rej+=1;
+        if(y.id[0]!='F'||y.id.size() < 4){
+            cout<<y.id<<" REJECT - bad id\n";
+            continue;
+        }
+        bool brk=false;
+        for(int h=1;h<y.id.size();h++) {
+            if(!isdigit(y.id[h])){
+                brk=true;
+                break;
+            }
+        }
+        if(brk){
+            cout<<y.id<<" REJECT - bad id\n";
+            continue;
+        }
+        string emkg=y.kg;
+        if(emkg.empty()){
+            cout<<y.id<<" REJECT - weight missing\n";
+            continue;
+        }
+        try{
+            stod(y.kg);
+        }
+        catch(...){
+            cout<<y.id<<" REJECT - weight not a number\n";
+            continue;
+        }
+        kil=stod(y.kg);
+        if(kil<=0 || kil>80){
+            cout<<y.id<<" REJECT - weight out of range\n";
+            continue;
+        }
+        char letter=toupper(y.grade);
+        if(letter!='A'&& letter!='B' &&letter!='C'){
+            cout<<y.id<<" REJECT - unknown grade\n";
+            continue;
+        }
+        cout<<y.id<<" ACCEPTED\n";
+        rej-=1;
+        acc+=1;
+    }
+    cout<<acc<<" accepted, "<<rej<<" rejected";
 
 
 
@@ -190,8 +339,24 @@ int main() {
     // =================================================================
 
     cout << "=== Q6 ===\n";
-
-
+    int laps=0;
+    int i_pos=6;
+    int hand=0;
+    while (true){
+        hand=board[i_pos];
+        for(int i=i_pos+1;i<i_pos+hand+1;i++){
+            if(i>16) i=16-i;
+            board[i]+=1;
+        }
+        i_pos+=hand;
+        if(i_pos>16) i_pos-=16;
+        laps+=1;
+        if(board[i_pos]<=1){
+            break;
+        }
+        
+    }
+    cout<<"Landed in pit "<<i_pos<<" after "<<laps<<" laps\n";
 
     
     // =================================================================
