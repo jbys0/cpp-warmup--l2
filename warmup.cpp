@@ -132,7 +132,7 @@ int main() {
     double ttl=0,hev=morningWeights[0];
     for(int i=0; i<12;i++){
         ttl+=morningWeights[i];
-        if(morningWeights[i]>0 and morningWeights[i]<80){
+        if(morningWeights[i]>0 and morningWeights[i]<=80){
             val+=1;
             run+=1;
         }
@@ -168,6 +168,8 @@ int main() {
     // =================================================================
     int a=0,b=0,c=0;
     double ak=0,bk=0,ck=0;
+    char bav='A';
+    double big;
     for(Delivery y:logbook){
         if(y.grade=='A'){
             a++;
@@ -182,11 +184,20 @@ int main() {
             ck+=y.kg;
         }
     }
-
+    big=ak/a;
+    if(big < bk/b) {
+        big=bk/b;
+        bav='B';
+    }
+    if(big < ck/c) {
+        big=ck/c;
+        bav='C';
+    }
     cout << "=== Q2 ===\n";
-    cout<<"Grade A:"<< a <<" deliveries, "<<ak<<" kg total, "<<ak/a<<" kg average, \n";
-    cout<<"Grade B:" <<b <<" deliveries, "<<bk<<" kg total, "<<bk/b<<" kg average, \n";
-    cout<<"Grade C:"<< c <<" deliveries, "<<ck <<" kg total, "<<ck/c<<" kg average, \n";
+    cout<<"Grade A:"<< a <<" deliveries, "<<ak<<" kg total, "<<ak/a<<" kg average \n";
+    cout<<"Grade B:" <<b <<" deliveries, "<<bk<<" kg total, "<<bk/b<<" kg average \n";
+    cout<<"Grade C:"<< c <<" deliveries, "<<ck <<" kg total, "<<ck/c<<" kg average \n";
+    cout<<"Best average: grade "<<bav<<"\n";
 
 
 
@@ -221,9 +232,9 @@ int main() {
             freq[f.farmer]+=1;
         }
     }
-    int heav=0;
+    double heav=0;
     string nam="";
-    for(auto [farme,kgs]:freq){
+    for(auto [farme,kgs]:dev){
         if(kgs>heav){
             heav=kgs;
             nam=farme;
@@ -231,14 +242,14 @@ int main() {
     }
     int mst=0;
     string na="";
-    for(auto [farm,cnt]:dev){
+    for(auto [farm,cnt]:freq){
         if(cnt>mst){
             mst=cnt;
             na=farm;
         }
     }
-    cout<<"Most deliveries:"<<nam<<"("<<heav<<")\n";
-    cout<<"Most kg:"<<na<<"("<<mst<<")\n";
+    cout<<"Most deliveries:"<<na<<"("<<mst<<")\n";
+    cout<<"Most kg:"<<nam<<"("<<heav<<" kg)\n";
 
     cout << "\n";
 
@@ -268,6 +279,7 @@ int main() {
         pay+=fee;
         cout<<n.farmer <<" "<<n.kg<< " kg grade " <<n.grade<< "-> "<<fee<<"\n";
     }
+    cout<<"Total paid: "<<pay<<"\n";
 
 
 
@@ -348,6 +360,7 @@ int main() {
             if(i>16) i=16-i;
             board[i]+=1;
         }
+        board[i_pos]=0;
         i_pos+=hand;
         if(i_pos>16) i_pos-=16;
         laps+=1;
@@ -356,6 +369,11 @@ int main() {
         }
         
     }
+    cout<<"Final board: ";
+    for(int i=1;i<board.size();i++){
+        cout<<board[i]<<" ";
+    }
+    cout<<"\n";
     cout<<"Landed in pit "<<i_pos<<" after "<<laps<<" laps\n";
 
     
